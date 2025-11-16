@@ -14,10 +14,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install Railway CLI
-        run: npm install -g @railway/cli
+        run: npm install -g railway
 
       - name: Auth Railway
-        run: railway auth login --apiKey ${{ secrets.RAILWAY_TOKEN }}
+        run: railway login --apiKey ${{ secrets.RAILWAY_TOKEN }}
 
       - name: Deploy Monolith
         run: railway up --ci --verbose
