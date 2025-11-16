@@ -1,14 +1,14 @@
 import express from "express";
 import path from "path";
 import app from "./app";
-
+import apiRoutes from "./modules/api.routes";
 const PORT = process.env.PORT || 8080;
 
-const publicPath = path.join(__dirname, "../public");
+const publicPath = path.join(__dirname, "public");
 
 app.use(express.static(publicPath));
 
-app.use("/api", require("./modules/api.routes"));
+app.use("/api", apiRoutes);
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(publicPath, "index.html"));
