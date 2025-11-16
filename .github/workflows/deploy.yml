@@ -20,4 +20,4 @@ jobs:
         run: echo "RAILWAY_TOKEN=${{ secrets.RAILWAY_TOKEN }}" >> $GITHUB_ENV
 
       - name: Deploy Monolith
-        run: railway up --ci --verbose
+        run: railway up --service fullstack_test_01 --ci --verbose
