@@ -21,6 +21,7 @@ WORKDIR /app/backend
 
 COPY backend/package*.json ./
 RUN npm install
+ENV DATABASE_URL="mysql://placeholder"
 
 COPY backend ./
 RUN npx prisma generate
