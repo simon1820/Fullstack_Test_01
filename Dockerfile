@@ -1,6 +1,3 @@
-# =========================================================
-# 1) Build del frontend
-# =========================================================
 FROM node:20 AS frontend_builder
 
 WORKDIR /app/frontend
@@ -11,10 +8,6 @@ RUN npm install
 COPY frontend ./
 RUN npm run build
 
-
-# =========================================================
-# 2) Build del backend (incluye prisma)
-# =========================================================
 FROM node:20 AS backend_builder
 
 WORKDIR /app/backend
@@ -22,17 +15,12 @@ WORKDIR /app/backend
 COPY backend/package*.json ./
 RUN npm install
 
-# Prisma 5: requiere DATABASE_URL real
 ARG DATABASE_URL
 ENV DATABASE_URL=$DATABASE_URL
 
 COPY backend ./
 RUN npm run build
 
-
-# ========================================================
-# 3) Imagen final
-# ========================================================
 FROM node:20
 
 WORKDIR /app
