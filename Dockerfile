@@ -27,7 +27,6 @@ ARG DATABASE_URL
 ENV DATABASE_URL=$DATABASE_URL
 
 COPY backend ./
-RUN npx prisma generate
 RUN npm run build
 
 
@@ -49,4 +48,4 @@ ENV PORT=4000
 
 EXPOSE 4000
 
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]
+CMD ["sh", "-c", "npx prisma generate && npx prisma migrate deploy && node dist/server.js"]
