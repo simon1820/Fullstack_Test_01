@@ -2,6 +2,13 @@ import { Express } from "express";
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 
+// Detectar URL automáticamente
+const SERVER_URL =
+  process.env.API_URL ||
+  process.env.RAILWAY_PUBLIC_DOMAIN
+    ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
+    : `http://localhost:${process.env.PORT || 4000}`;
+
 const swaggerDefinition = {
   openapi: "3.0.0",
   info: {
@@ -12,10 +19,13 @@ const swaggerDefinition = {
   },
   servers: [
     {
-      url: process.env.API_URL || `http://localhost:${process.env.PORT || 4000}`,
-      description: "Servidor local",
+      url: SERVER_URL + "/api",
+      description: process.env.API_URL
+        ? "Servidor en producción (Railway)"
+        : "Servidor local",
     },
   ],
+
   components: {
     securitySchemes: {
       bearerAuth: {
@@ -24,6 +34,7 @@ const swaggerDefinition = {
         bearerFormat: "JWT",
       },
     },
+
     schemas: {
       // ====== AUTH ======
       RegisterRequest: {
@@ -35,6 +46,7 @@ const swaggerDefinition = {
           password: { type: "string", example: "123456" },
         },
       },
+
       LoginRequest: {
         type: "object",
         required: ["email", "password"],
@@ -43,13 +55,13 @@ const swaggerDefinition = {
           password: { type: "string", example: "123456" },
         },
       },
+
       LoginResponse: {
         type: "object",
         properties: {
           token: {
             type: "string",
-            example:
-              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9....",
+            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9....",
           },
           user: {
             $ref: "#/components/schemas/User",
@@ -74,7 +86,10 @@ const swaggerDefinition = {
         properties: {
           id: { type: "number", example: 1 },
           name: { type: "string", example: "Proyecto A" },
-          description: { type: "string", example: "Descripción del proyecto" },
+          description: {
+            type: "string",
+            example: "Descripción del proyecto",
+          },
           createdAt: { type: "string", format: "date-time" },
         },
       },
@@ -164,9 +179,5 @@ const swaggerSpec = swaggerJsdoc(options);
 export function swaggerDocs(app: Express) {
   app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-  const docsUrl =
-    (process.env.API_URL ||
-      `http://localhost:${process.env.PORT || 4000}`) + "/docs";
-
-  console.log(`Swagger disponible en: ${docsUrl}`);
+  console.log(`Swagger iniciado en: ${SERVER_URL}/docs`);
 }
