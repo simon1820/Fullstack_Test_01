@@ -23,7 +23,6 @@ COPY backend/package*.json ./
 RUN npm install
 
 COPY backend ./
-RUN npx prisma generate
 RUN npm run build
 
 
