@@ -9,8 +9,9 @@ import statsRoutes from "./modules/stats/stats.routes";
 
 const app = express();
 
-// Middlewares
 const CORS_ORIGIN = process.env.CORS_ORIGIN || "*";
+
+// Middlewares
 app.use(cors({ origin: CORS_ORIGIN }));
 app.use(express.json());
 
@@ -22,7 +23,7 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-// Rutas reales de tu API
+// Rutas API
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/tasks", taskRoutes);

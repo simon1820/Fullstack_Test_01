@@ -1,4 +1,4 @@
-name: CI/CD - Fullstack Deploy
+name: Monolith Deploy - Railway
 
 on:
   push:
@@ -6,37 +6,17 @@ on:
       - test/simonandresguijarromurrieta
 
 jobs:
-  build-test-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Install backend dependencies
-        working-directory: ./backend
-        run: npm install
-
-      - name: Build backend
-        working-directory: ./backend
-        run: npm run build
-
-      - name: Skip backend tests in CI
-        run: echo "Tests disabled in CI"
-
-      - name: Install frontend dependencies
-        working-directory: ./frontend
-        run: npm install
-
-      - name: Build frontend
-        working-directory: ./frontend
-        run: npm run build
+      - uses: actions/checkout@v3
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      - name: Set Railway Token
-        run: echo "RAILWAY_TOKEN=${{ secrets.RAILWAY_TOKEN }}" >> $GITHUB_ENV
+      - name: Auth Railway
+        run: railway login --token ${{ secrets.RAILWAY_TOKEN }}
 
-      - name: Deploy (Docker Compose) to Railway
-        run: railway up --service frontend --ci --verbose
+      - name: Deploy Monolith
+        run: railway up --ci --verbose
