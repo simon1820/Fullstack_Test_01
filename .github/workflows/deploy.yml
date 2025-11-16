@@ -13,11 +13,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Instalar CLI correcto
       - name: Install Railway CLI
-        run: npm install -g railway
+        run: npm install -g @railway/cli
 
+      # Autenticación correcta
       - name: Auth Railway
-        run: railway login --apiKey ${{ secrets.RAILWAY_TOKEN }}
+        run: railway login --token ${{ secrets.RAILWAY_TOKEN }}
 
+      # Desplegar el monolito
       - name: Deploy Monolith
         run: railway up --ci --verbose
