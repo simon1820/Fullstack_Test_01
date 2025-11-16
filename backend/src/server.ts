@@ -4,7 +4,9 @@ import app from "./app";
 import apiRoutes from "./modules/api.routes";
 const PORT = process.env.PORT || 8080;
 
-const publicPath = path.join(__dirname, "public");
+// En producción (Docker): /app/public
+// En desarrollo local: backend/public (si existe)
+const publicPath = path.join(__dirname, "..", "public");
 
 app.use(express.static(publicPath));
 
