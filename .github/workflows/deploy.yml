@@ -39,4 +39,4 @@ jobs:
         run: echo "RAILWAY_TOKEN=${{ secrets.RAILWAY_TOKEN }}" >> $GITHUB_ENV
 
       - name: Deploy (Docker Compose) to Railway
-        run: railway up --ci --verbose
+        run: railway up --service frontend --ci --verbose
