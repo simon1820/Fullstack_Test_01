@@ -48,4 +48,4 @@ ENV PORT=4000
 
 EXPOSE 4000
 
-CMD ["node", "dist/server.js"]
+CMD ["sh", "-c", "npx prisma generate && node dist/server.js"]
