@@ -25,4 +25,4 @@ jobs:
       - name: Deploy Monolith
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: railway up --ci --verbose
+        run: railway up --service "Fullstack_Test_01" --ci --verbose
