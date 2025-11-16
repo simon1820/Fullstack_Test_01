@@ -10,7 +10,7 @@ app.use(express.static(publicPath));
 
 app.use("/api", apiRoutes);
 
-app.get("*", (req, res) => {
+app.all("/*", (req, res) => {
   res.sendFile(path.join(publicPath, "index.html"));
 });
 
