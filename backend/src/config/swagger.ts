@@ -154,10 +154,8 @@ const swaggerDefinition = {
 const options = {
   swaggerDefinition,
   apis: [
-    "./src/modules/auth/*.routes.ts",
-    "./src/modules/projects/*.routes.ts",
-    "./src/modules/tasks/*.routes.ts",
-    "./src/modules/stats/*.routes.ts",
+    "./src/modules/**/*.routes.ts",
+    "./dist/modules/**/*.routes.js",
   ],
 };
 
