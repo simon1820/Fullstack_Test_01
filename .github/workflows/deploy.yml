@@ -10,46 +10,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # --- 1. Clonar el repositorio ---
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # ============================================================
-      # BACKEND
-      # ============================================================
-
       - name: Install backend dependencies
         working-directory: ./backend
-        run: npm install
+        run: npm ci
 
       - name: Build backend
         working-directory: ./backend
-        run: npm run build --if-present
+        run: npm run build
 
       - name: Skip backend tests in CI
-        run: echo "Tests disabled in CI to avoid DB dependency"
-
-      # ============================================================
-      # FRONTEND
-      # ============================================================
+        run: echo "Tests disabled in CI"
 
       - name: Install frontend dependencies
         working-directory: ./frontend
-        run: npm install
+        run: npm ci
 
       - name: Build frontend
         working-directory: ./frontend
-        run: npm run build --if-present
-
-      # ============================================================
-      # DEPLOY A RAILWAY
-      # ============================================================
+        run: npm run build
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
       - name: Railway Login
-        run: railway login --token ${{ secrets.RAILWAY_TOKEN }}
+        run: railway login --token "${{ secrets.RAILWAY_TOKEN }}"
 
       - name: Deploy (Docker Compose) to Railway
         run: railway up --ci --verbose
