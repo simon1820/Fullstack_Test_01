@@ -95,6 +95,12 @@ export class ProjectService {
    * @throws Error si el proyecto no existe o el usuario no es el dueño
    */
   async delete(userId: number, projectId: number) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (user?.role === "admin") {
+      return prisma.project.delete({ where: { id: projectId } });
+    }
+
     const project = await prisma.project.findFirst({
       where: { id: projectId, userId },
     });
@@ -121,27 +127,27 @@ export class ProjectService {
    */
   async addCollaborator(ownerId: number, projectId: number, collaboratorEmail: string) {
 
-  const project = await prisma.project.findFirst({
-    where: { id: projectId, userId: ownerId }
-  });
+    const project = await prisma.project.findFirst({
+      where: { id: projectId, userId: ownerId }
+    });
 
-  if (!project) throw new Error("No tienes permiso para este proyecto");
+    if (!project) throw new Error("No tienes permiso para este proyecto");
 
-  const user = await prisma.user.findUnique({
-    where: { email: collaboratorEmail }
-  });
+    const user = await prisma.user.findUnique({
+      where: { email: collaboratorEmail }
+    });
 
-  if (!user) throw new Error("Usuario no encontrado");
+    if (!user) throw new Error("Usuario no encontrado");
 
-  await prisma.collaborator.create({
-    data: {
-      projectId,
-      userId: user.id
-    }
-  });
+    await prisma.collaborator.create({
+      data: {
+        projectId,
+        userId: user.id
+      }
+    });
 
-  return { message: "Colaborador agregado correctamente" };
-}
+    return { message: "Colaborador agregado correctamente" };
+  }
 
   /**
    * Elimina un colaborador de un proyecto.
@@ -154,27 +160,27 @@ export class ProjectService {
    */
   async removeCollaborator(ownerId: number, collaboratorId: number) {
 
-  // 1. Obtener el colaborador a eliminar
-  const collaborator = await prisma.collaborator.findUnique({
-    where: { id: collaboratorId }
-  });
+    // 1. Obtener el colaborador a eliminar
+    const collaborator = await prisma.collaborator.findUnique({
+      where: { id: collaboratorId }
+    });
 
-  if (!collaborator) throw new Error("Colaborador no encontrado");
+    if (!collaborator) throw new Error("Colaborador no encontrado");
 
-  // 2. Validar que el owner es dueño del proyecto
-  const project = await prisma.project.findFirst({
-    where: { id: collaborator.projectId, userId: ownerId }
-  });
+    // 2. Validar que el owner es dueño del proyecto
+    const project = await prisma.project.findFirst({
+      where: { id: collaborator.projectId, userId: ownerId }
+    });
 
-  if (!project) throw new Error("No tienes permiso para este proyecto");
+    if (!project) throw new Error("No tienes permiso para este proyecto");
 
-  // 3. Eliminar colaborador
-  await prisma.collaborator.delete({
-    where: { id: collaboratorId }
-  });
+    // 3. Eliminar colaborador
+    await prisma.collaborator.delete({
+      where: { id: collaboratorId }
+    });
 
-  return { message: "Colaborador eliminado" };
-}
+    return { message: "Colaborador eliminado" };
+  }
 
   /**
    * Lista todos los colaboradores de un proyecto.

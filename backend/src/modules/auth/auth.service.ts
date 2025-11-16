@@ -33,7 +33,7 @@ export class AuthService {
     const hashed = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
-      data: { name, email, password: hashed, role: "user" }, // 🔒 Siempre "user"
+      data: { name, email, password: hashed, role: "user" },
       select: {
         id: true,
         name: true,
@@ -70,7 +70,6 @@ export class AuthService {
       throw new Error("Credenciales inválidas");
     }
 
-    // 👉 Token incluye el rol para control de acceso
     const token = signToken({ id: user.id, role: user.role });
 
     return {
