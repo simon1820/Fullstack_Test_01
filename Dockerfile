@@ -11,7 +11,6 @@ RUN npm install
 COPY frontend ./
 RUN npm run build
 
-
 # =========================================================
 # 2) Build del backend (incluye prisma)
 # =========================================================
@@ -27,20 +26,17 @@ COPY backend ./
 RUN npx prisma generate
 RUN npm run build
 
-
-# =========================================================
+# ========================================================
 # 3) Imagen final
-# =========================================================
+# ========================================================
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Copiar backend compilado
 COPY --from=backend_builder /app/backend/dist ./dist
 COPY --from=backend_builder /app/backend/node_modules ./node_modules
 COPY --from=backend_builder /app/backend/prisma ./prisma
 
-# Copiar frontend compilado
 COPY --from=frontend_builder /app/frontend/dist ./public
 
 ENV NODE_ENV=production
@@ -48,4 +44,4 @@ ENV PORT=4000
 
 EXPOSE 4000
 
-CMD ["node", "dist/server.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]
