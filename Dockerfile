@@ -1,6 +1,6 @@
-###############################################
-# 1) Build FRONTEND (Vite)
-###############################################
+# =========================================================
+# 1) Build del frontend
+# =========================================================
 FROM node:20 AS frontend_builder
 
 WORKDIR /app/frontend
@@ -8,13 +8,13 @@ WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm install
 
-COPY frontend .
+COPY frontend ./
 RUN npm run build
 
 
-###############################################
-# 2) Build BACKEND (TypeScript + Prisma)
-###############################################
+# =========================================================
+# 2) Build del backend (incluye prisma)
+# =========================================================
 FROM node:20 AS backend_builder
 
 WORKDIR /app/backend
@@ -22,19 +22,15 @@ WORKDIR /app/backend
 COPY backend/package*.json ./
 RUN npm install
 
-COPY backend .
-
-# Generar Prisma Client
+COPY backend ./
 RUN npx prisma generate
-
-# Compilar TypeScript
 RUN npm run build
 
 
-###############################################
-# 3) Final Image - Ejecuta el MONOLITO
-###############################################
-FROM node:20-alpine AS runner
+# =========================================================
+# 3) Imagen final
+# =========================================================
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -43,7 +39,7 @@ COPY --from=backend_builder /app/backend/dist ./dist
 COPY --from=backend_builder /app/backend/node_modules ./node_modules
 COPY --from=backend_builder /app/backend/prisma ./prisma
 
-# Copiar build del frontend y servirlo desde Express
+# Copiar frontend compilado
 COPY --from=frontend_builder /app/frontend/dist ./public
 
 ENV NODE_ENV=production
