@@ -22,8 +22,9 @@ WORKDIR /app/backend
 COPY backend/package*.json ./
 RUN npm install
 
-# Hack para permitir prisma generate en build
-ENV DATABASE_URL="mysql://placeholder"
+# Prisma 5: requiere DATABASE_URL real
+ARG DATABASE_URL
+ENV DATABASE_URL=$DATABASE_URL
 
 COPY backend ./
 RUN npx prisma generate
@@ -33,16 +34,14 @@ RUN npm run build
 # =========================================================
 # 3) Imagen final
 # =========================================================
-FROM node:20-alpine
+FROM node:20
 
 WORKDIR /app
 
-# Copiar backend compilado
 COPY --from=backend_builder /app/backend/dist ./dist
 COPY --from=backend_builder /app/backend/node_modules ./node_modules
 COPY --from=backend_builder /app/backend/prisma ./prisma
 
-# Copiar frontend compilado
 COPY --from=frontend_builder /app/frontend/dist ./public
 
 ENV NODE_ENV=production
