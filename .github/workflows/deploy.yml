@@ -35,8 +35,8 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      - name: Railway Login
-        run: railway login --token "${{ secrets.RAILWAY_TOKEN }}"
+      - name: Set Railway Token
+        run: echo "RAILWAY_TOKEN=${{ secrets.RAILWAY_TOKEN }}" >> $GITHUB_ENV
 
       - name: Deploy (Docker Compose) to Railway
         run: railway up --ci --verbose
