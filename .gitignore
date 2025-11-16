@@ -17,6 +17,8 @@ build/
 out/
 *.tsbuildinfo
 
+mysql_data/
+
 # Logs
 logs/
 *.log

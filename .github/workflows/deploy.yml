@@ -1,0 +1,58 @@
+name: CI/CD - Fullstack Deploy
+
+on:
+  push:
+    branches:
+      - test/simonandresguijarromurrieta
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # --- 1. Clonar el repositorio ---
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # ============================================================
+      # BACKEND
+      # ============================================================
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm install
+
+      - name: Build backend
+        working-directory: ./backend
+        run: npm run build --if-present
+
+      - name: Run backend tests
+        working-directory: ./backend
+        run: npm test --if-present
+
+      # ============================================================
+      # FRONTEND
+      # ============================================================
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm install
+
+      - name: Build frontend
+        working-directory: ./frontend
+        run: npm run build --if-present
+
+      # ============================================================
+      # DEPLOY A RAILWAY
+      # ============================================================
+
+      - name: Install Railway CLI
+        run: npm install -g railway
+
+      - name: Railway Login
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway login --token $RAILWAY_TOKEN
+
+      - name: Deploy (Docker Compose) to Railway
+        run: railway up --ci --verbose

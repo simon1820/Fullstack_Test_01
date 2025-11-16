@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: gestorpro
+    volumes:
+      - db_data:/var/lib/mysql
+
+  backend:
+    build: ./backend
+    restart: always
+    environment:
+      DATABASE_URL: mysql://root:root@mysql:3306/gestorpro
+      PORT: 4000
+      JWT_SECRET: supersecret
+    depends_on:
+      - mysql
+
+  frontend:
+    build: ./frontend
+    restart: always
+    environment:
+      VITE_API_URL: http://backend:4000/api
+    depends_on:
+      - backend
+
+volumes:
+  db_data:

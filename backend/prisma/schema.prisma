@@ -1,0 +1,72 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+enum Role {
+  admin
+  user
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(user)   // 👈 AGREGADO
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projects      Project[]
+  tasks         Task[]
+  collaborators Collaborator[]
+}
+
+model Project {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  tasks         Task[]
+  collaborators Collaborator[]
+}
+
+model Task {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String?
+  status      String  @default("pendiente") 
+  priority    String  @default("media")     
+
+  projectId Int
+  project   Project @relation(fields: [projectId], references: [id])
+
+  assignedTo Int?
+  user       User? @relation(fields: [assignedTo], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Collaborator {
+  id        Int @id @default(autoincrement())
+  projectId Int
+  userId    Int
+
+  project Project @relation(fields: [projectId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([projectId, userId])
+}

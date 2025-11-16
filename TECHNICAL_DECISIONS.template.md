@@ -1,310 +1,125 @@
-# Decisiones Técnicas
-## [Tu Nombre]
+<!--
+  TECHNICAL_DECISIONS.template.md
+  Plantilla limpia para documentar DECISIONES TÉCNICAS del proyecto.
+  - Este archivo sirve como plantilla y guía; copiar a `TECHNICAL_DECISIONS.md` cuando se complete.
+  - Debe contener justificaciones, trade-offs y alternativas, no instrucciones de ejecución.
+-->
 
-> **Nota**: Este es un archivo opcional pero recomendado. Documentar tus decisiones técnicas demuestra pensamiento crítico y puede sumar puntos extra en la evaluación.
+# Decisiones Técnicas — Fullstack (Node.js + React)
 
----
+Propósito: documentar las decisiones arquitectónicas y técnicas principales del proyecto. Esta plantilla agrupa las decisiones por área y su justificación. No incluye instrucciones de despliegue (esas van en `README.md`).
 
-## 📋 Información General
+## Alcance
 
-- **Nombre del Candidato**: [Tu nombre completo]
-- **Fecha de Inicio**: [DD/MM/YYYY]
-- **Fecha de Entrega**: [DD/MM/YYYY]
-- **Tiempo Dedicado**: [Ej: ~20 horas]
-
----
-
-## 🛠️ Stack Tecnológico Elegido
-
-### Backend
-
-| Tecnología | Versión | Razón de Elección |
-|------------|---------|-------------------|
-| Node.js | 18.x | [Explica por qué elegiste esta versión] |
-| Express | 4.x | [Razón] |
-| Base de Datos | MySQL/MongoDB | [¿Por qué elegiste esta sobre la otra?] |
-| ORM/ODM | Sequelize/Mongoose | [Razón] |
-| Validación | express-validator/Joi/Zod | [Razón] |
-| Testing | Jest/Mocha | [Razón] |
-
-### Frontend
-
-| Tecnología | Versión | Razón de Elección |
-|------------|---------|-------------------|
-| React | 18.x | [Razón] |
-| Build Tool | Vite/CRA | [¿Por qué elegiste este?] |
-| Estado Global | Context/Redux/Zustand | [Razón] |
-| Estilos | CSS/Tailwind/MUI/etc | [Razón] |
-| Formularios | react-hook-form/Formik | [Razón] |
+Decisiones técnicas y su justificación: arquitectura, componentes principales, diseño de datos, seguridad, testing y consideraciones operativas.
 
 ---
 
-## 🏗️ Arquitectura
+## Resumen de decisiones principales
 
-### Estructura del Backend
-
-```
-backend/
-├── src/
-│   ├── [tu estructura]
-│   └── ...
-```
-
-**Razón de esta estructura:**
-[Explica por qué organizaste tu código de esta manera]
-
-### Estructura del Frontend
-
-```
-frontend/
-├── src/
-│   ├── [tu estructura]
-│   └── ...
-```
-
-**Razón de esta estructura:**
-[Explica por qué organizaste tu código de esta manera]
+- Arquitectura: separación frontend/backend mediante una API REST para permitir despliegues independientes y escalabilidad horizontal.
+- Backend: `Node.js` + `Express` con `TypeScript`. Razonamiento: buen balance entre productividad, ecosistema y simplicidad operativa.
+- ORM: `Prisma` sobre MySQL. Razonamiento: generación de tipos, migraciones y consultas relacionales claras.
+- Frontend: `React` + `TypeScript` con `Vite`. Estado global: `Zustand` por su simplicidad. Estilos: `Tailwind`.
+- Autenticación: `JWT` (stateless). Razonamiento: simple y escalable; considerar refresh tokens según requisitos de seguridad.
+- Testing: `Jest` + `Supertest` para pruebas de integración de endpoints críticos.
 
 ---
 
-## 🗄️ Diseño de Base de Datos
+## Diseño y organización del backend
 
-### Elección: MySQL / MongoDB
-
-**Razones:**
-- [Razón 1]
-- [Razón 2]
-- [Razón 3]
-
-### Schema/Modelos
-
-[Describe brevemente tus tablas/colecciones principales]
-
-**Decisiones importantes:**
-- **Normalización** (si usas MySQL): [Explica cómo normalizaste]
-- **Índices**: [Qué índices agregaste y por qué]
-- **Relaciones**: [Cómo manejaste las relaciones entre entidades]
+- Organización por módulos (`auth`, `projects`, `tasks`, `stats`) para separación de responsabilidades.
+- Cada módulo contiene controladores, rutas y servicios cuando procede.
+- Validación: actualmente validaciones básicas; recomendación: migrar a `Zod` o `Joi` para esquemas declarativos y mensajes consistentes.
 
 ---
 
-## 🔐 Seguridad
+## Modelo de datos (decisión)
 
-### Implementaciones de Seguridad
+- Modelo relacional: `User`, `Project`, `Task`. Relaciones principales:
+  - `User` 1—N `Project`
+  - `Project` 1—N `Task`
+  - `Project` N—N `User` (colaboradores)
 
-- [ ] **Hash de contraseñas**: [bcrypt, argon2, etc. - ¿Por qué elegiste este?]
-- [ ] **JWT**: [¿Cómo configuraste la expiración? ¿Por qué?]
-- [ ] **Validación de inputs**: [¿Qué estrategia usaste?]
-- [ ] **CORS**: [¿Cómo lo configuraste?]
-- [ ] **Headers de seguridad**: [¿Usaste helmet? ¿Otras medidas?]
-- [ ] **Rate limiting**: [Si lo implementaste, ¿cómo?]
-
-### Consideraciones Adicionales
-
-[¿Qué otras medidas de seguridad tomaste? ¿Qué vulnerabilidades consideraste?]
+Justificación: el dominio requiere integridad referencial y joins frecuentes.
 
 ---
 
-## 🎨 Decisiones de UI/UX
+## Seguridad (decisiones y trade-offs)
 
-### Framework/Librería de UI
+- Hash de contraseñas con `bcrypt`.
+- Uso de `JWT` firmado para autenticación stateless; trade-off: simplicidad vs. necesidad futura de refresh tokens y revocación.
 
-**Elegí**: [Ninguna / Material-UI / Ant Design / TailwindCSS / etc.]
+### Creación de administradores (seguridad por diseño)
 
-**Razón**: [¿Por qué elegiste esto sobre otras opciones?]
+**Decisión**: El endpoint `/auth/register` **siempre crea usuarios con rol `user`**. Los administradores no pueden ser creados por el endpoint público de registro.
 
-### Patrones de Diseño
+**Justificación**: Prevenir escalación de privilegios donde un usuario malicioso podría registrarse directamente como `admin`. El rol debe ser asignado solo por:
+1. **SQL directo** (desarrollo local): insertar directamente en la tabla `User` con `role = 'admin'` tras generar hash bcrypt de la contraseña.
+2. **Script Node.js** (desarrollo): ejecutar `node scripts/create-admin.js email password name` para crear admins programáticamente.
+3. **Endpoint administrativo futuro** (producción): implementar `POST /api/admin/users` protegido solo para admins existentes.
 
-- **Responsive Design**: [¿Cómo lo abordaste? Mobile-first?]
-- **Loading States**: [¿Cómo manejaste los estados de carga?]
-- **Error Handling**: [¿Cómo muestras errores al usuario?]
-- **Feedback Visual**: [Toasts, modales, etc.]
+**Alternativas descartadas**:
+- Permitir `role` en el body del registro: riesgo de privilegios no autorizados.
+- Usar un token mágico para primer admin: complejidad innecesaria; mejor usar scripts.
 
-### Decisiones de UX
-
-[Explica algunas decisiones importantes de experiencia de usuario que tomaste]
-
----
-
-## 🧪 Testing
-
-### Estrategia de Testing
-
-**Backend:**
-- [Tipo de tests que escribiste]
-- [¿Por qué elegiste probar estos endpoints/funciones específicamente?]
-- [Herramientas usadas]
-
-**Frontend:**
-- [Tipo de tests que escribiste]
-- [¿Qué componentes decidiste probar y por qué?]
-- [Herramientas usadas]
-
-### Cobertura
-
-- **Backend**: [X%]
-- **Frontend**: [X%]
-
-[¿Por qué decidiste este nivel de cobertura dado el tiempo disponible?]
+**Mitigación**: El código de registro valida y rechaza cualquier intento de especificar `role` en la solicitud.
 
 ---
 
-## 🐳 Docker
+## Control de acceso basado en roles (RBAC)
 
-### Implementación
+- Implementación: middleware `requireRole()` que valida roles en el JWT.
+- Roles definidos: `admin` y `user` (enum en Prisma).
+- Flujo:
+  1. Autenticación: usuario se loguea, el backend genera un JWT que contiene `{ id, role }`.
+  2. Middleware: cada petición pasa por `authMiddleware` que extrae el `role` del JWT e inyecta en `req.role`.
+  3. Autorización: ciertas rutas usan `requireRole(["admin"])` que valida si el usuario tiene el rol requerido.
 
-- [ ] Dockerfile backend
-- [ ] Dockerfile frontend
-- [ ] docker-compose.yml
+- Rutas protegidas por rol:
+  - `DELETE /api/projects/{id}` — solo admin puede eliminar proyectos.
+  - Otras rutas (crear, actualizar, listar proyectos y tareas) accesibles a usuarios autenticados.
 
-**Decisiones:**
-- [¿Por qué elegiste Alpine/Debian como base?]
-- [¿Usaste multi-stage builds? ¿Por qué?]
-- [¿Cómo optimizaste el tamaño de las imágenes?]
-
----
-
-## ⚡ Optimizaciones
-
-### Backend
-
-- [Optimización 1 y por qué la implementaste]
-- [Optimización 2]
-- [etc.]
-
-### Frontend
-
-- [Optimización 1]
-- [Optimización 2]
-- [etc.]
+- Trade-offs:
+  - Roles actualmente simples (2 niveles); para control fino se recomienda un sistema de permisos granular.
+  - No hay revocación de tokens: un cambio de rol requiere nuevo login para reflejarse.
+  
+- **Importante**: La creación de administradores se describe en la sección "Creación de administradores (seguridad por diseño)". Por defecto, el registro crea solo usuarios normales.
 
 ---
 
-## 🚧 Desafíos y Soluciones
+## Observabilidad y operación
 
-### Desafío 1: [Nombre del desafío]
-
-**Problema:**
-[Describe el problema que enfrentaste]
-
-**Solución:**
-[Cómo lo resolviste]
-
-**Aprendizaje:**
-[Qué aprendiste de esto]
-
-### Desafío 2: [Nombre del desafío]
-
-**Problema:**
-[Descripción]
-
-**Solución:**
-[Tu solución]
-
-**Aprendizaje:**
-[Qué aprendiste]
-
-### Desafío 3: [Nombre del desafío]
-
-**Problema:**
-[Descripción]
-
-**Solución:**
-[Tu solución]
-
-**Aprendizaje:**
-[Qué aprendiste]
+- Logs: al menos logs nivel `info`; en producción recomendar logs estructurados (JSON) y un colector central.
+- Métricas/Tracing: no implementadas en el alcance inicial; considerar Prometheus/OpenTelemetry si se prepara para producción.
 
 ---
 
-## 🎯 Trade-offs
+## Docker y despliegue (decisiones)
 
-### Trade-off 1: [Decisión]
-
-**Opciones consideradas:**
-- Opción A: [Descripción]
-- Opción B: [Descripción]
-
-**Elegí**: [Opción X]
-
-**Razón:**
-[Por qué elegiste esta opción sobre la otra. ¿Qué sacrificaste y qué ganaste?]
-
-### Trade-off 2: [Decisión]
-
-**Opciones consideradas:**
-- [...]
-
-**Elegí**: [...]
-
-**Razón:**
-[...]
+- Proveer `Dockerfile` y `docker-compose.yml` para facilitar evaluación y reproducibilidad.
+- Trade-off: aumenta complejidad local pero mejora homogeneidad entre entornos y CI.
 
 ---
 
-## 🔮 Mejoras Futuras
+## Alternativas consideradas
 
-Si tuviera más tiempo, implementaría:
-
-1. **[Mejora 1]**
-   - Descripción: [...]
-   - Beneficio: [...]
-   - Tiempo estimado: [...]
-
-2. **[Mejora 2]**
-   - Descripción: [...]
-   - Beneficio: [...]
-   - Tiempo estimado: [...]
-
-3. **[Mejora 3]**
-   - Descripción: [...]
-   - Beneficio: [...]
-   - Tiempo estimado: [...]
+- NoSQL (MongoDB): descartada por la naturaleza relacional del dominio.
+- Redux para estado: descartado por overhead; `Zustand` preferido para este scope.
 
 ---
 
-## 📚 Recursos Consultados
+## Riesgos y mitigaciones
 
-Lista de recursos que consultaste durante el desarrollo:
-
-- [Documentación oficial de X]
-- [Artículo sobre Y]
-- [Stack Overflow thread sobre Z]
-- [etc.]
+- Validaciones insuficientes → migrar a esquemas y añadir tests de contratos.
+- Tokens JWT sin refresh → añadir refresh tokens y mecanismos de revocación si se necesita control fino.
 
 ---
 
-## 🤔 Reflexión Final
+## Conclusión
 
-### ¿Qué salió bien?
-
-[Reflexiona sobre qué aspectos del proyecto consideras que hiciste particularmente bien]
-
-### ¿Qué mejorarías?
-
-[Con más tiempo o conocimiento, ¿qué harías diferente?]
-
-### ¿Qué aprendiste?
-
-[¿Qué nuevas habilidades o conocimientos adquiriste durante este proyecto?]
+Las decisiones priorizan claridad, mantenibilidad y rapidez de entrega para la prueba técnica. Se recomiendan mejoras (validaciones declarativas, observabilidad y gestión de tokens) si se adapta a producción.
 
 ---
 
-## 📸 Capturas de Pantalla
-
-[Opcional: Agrega capturas de pantalla de tu aplicación]
-
-### Login
-![Login](./screenshots/login.png)
-
-### Dashboard
-![Dashboard](./screenshots/dashboard.png)
-
-### Lista de Proyectos
-![Projects](./screenshots/projects.png)
-
-### Detalle de Tareas
-![Tasks](./screenshots/tasks.png)
-
----
-
-**Fecha de última actualización**: [DD/MM/YYYY]
+<!-- Instrucciones: copiar este archivo a `TECHNICAL_DECISIONS.md` y completar los apartados con detalles específicos del proyecto si se desea. -->
