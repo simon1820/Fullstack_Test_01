@@ -10,8 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli
@@ -19,5 +18,9 @@ jobs:
       - name: Set Railway Token
         run: echo "RAILWAY_TOKEN=${{ secrets.RAILWAY_TOKEN }}" >> $GITHUB_ENV
 
+      # 👇 NUEVO STEP
+      - name: Show Railway Project Info
+        run: railway status --json
+
       - name: Deploy Monolith
-        run: railway up --service fullstack_test_01 --ci --verbose
+        run: railway up --ci --verbose
