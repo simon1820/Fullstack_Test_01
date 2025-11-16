@@ -7,7 +7,7 @@ const controller = new AuthController();
 
 /**
  * @openapi
- * /api/auth/register:
+ * /auth/register:
  *   post:
  *     tags:
  *       - Auth
@@ -32,7 +32,7 @@ router.post("/register", controller.register);
 
 /**
  * @openapi
- * /api/auth/login:
+ * /auth/login:
  *   post:
  *     tags:
  *       - Auth
@@ -57,7 +57,7 @@ router.post("/login", controller.login);
 
 /**
  * @openapi
- * /api/auth/profile:
+ * /auth/profile:
  *   get:
  *     tags:
  *       - Auth

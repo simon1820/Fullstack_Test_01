@@ -8,7 +8,7 @@ const controller = new TaskController();
 
 /**
  * @openapi
- * /api/tasks:
+ * /tasks:
  *   get:
  *     tags:
  *       - Tasks
@@ -29,7 +29,7 @@ router.get("/", authMiddleware, controller.findAll);
 
 /**
  * @openapi
- * /api/tasks:
+ * /tasks:
  *   post:
  *     tags:
  *       - Tasks
@@ -73,7 +73,7 @@ router.post("/", authMiddleware, controller.create);
 
 /**
  * @openapi
- * /api/tasks/{id}:
+ * /tasks/{id}:
  *   put:
  *     tags:
  *       - Tasks
@@ -120,7 +120,7 @@ router.put("/:id", authMiddleware, controller.update);
 
 /**
  * @openapi
- * /api/tasks/{id}/status:
+ * /tasks/{id}/status:
  *   patch:
  *     tags:
  *       - Tasks
@@ -156,7 +156,7 @@ router.patch("/:id/status", authMiddleware, requireRole(["admin"]), controller.u
 
 /**
  * @openapi
- * /api/tasks/{id}:
+ * /tasks/{id}:
  *   delete:
  *     tags:
  *       - Tasks

@@ -7,7 +7,7 @@ const controller = new StatsController();
 
 /**
  * @openapi
- * /api/stats:
+ * /stats:
  *   get:
  *     tags:
  *       - Stats

@@ -42,7 +42,7 @@ router.get("/", controller.findAll);
 
 /**
  * @openapi
- * /api/projects:
+ * /projects:
  *   post:
  *     tags:
  *       - Projects
@@ -75,7 +75,7 @@ router.post("/", controller.create);
 
 /**
  * @openapi
- * /api/projects/{id}:
+ * /projects/{id}:
  *   get:
  *     tags:
  *       - Projects
@@ -102,7 +102,7 @@ router.get("/:id", controller.findOne);
 
 /**
  * @openapi
- * /api/projects/{id}:
+ * /projects/{id}:
  *   put:
  *     tags:
  *       - Projects
@@ -136,7 +136,7 @@ router.put("/:id", controller.update);
 
 /**
  * @openapi
- * /api/projects/{id}:
+ * /projects/{id}:
  *   delete:
  *     tags:
  *       - Projects
@@ -159,7 +159,7 @@ router.delete("/:id", requireRole(["admin"]), controller.delete);
 
 /**
  * @openapi
- * /api/projects/{projectId}/collaborators:
+ * /projects/{projectId}/collaborators:
  *   get:
  *     tags:
  *       - Projects
@@ -180,7 +180,7 @@ router.get("/:projectId/collaborators", controller.listCollaborators);
 
 /**
  * @openapi
- * /api/projects/{projectId}/collaborators:
+ * /projects/{projectId}/collaborators:
  *   post:
  *     tags:
  *       - Projects
@@ -214,7 +214,7 @@ router.post("/:projectId/collaborators", controller.addCollaborator);
 
 /**
  * @openapi
- * /api/projects/{projectId}/collaborators/{id}:
+ * /projects/{projectId}/collaborators/{id}:
  *   delete:
  *     tags:
  *       - Projects
