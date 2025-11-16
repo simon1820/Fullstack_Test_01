@@ -1,2 +1,5 @@
 [build]
 builder = "DOCKERFILE"
+
+[env]
+DATABASE_URL = "mysql://placeholder"
