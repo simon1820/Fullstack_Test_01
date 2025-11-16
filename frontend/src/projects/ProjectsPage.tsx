@@ -36,8 +36,19 @@ export default function ProjectsPage() {
   const handleDelete = async (id: number) => {
     if (!confirm("¿Eliminar proyecto?")) return;
 
-    await deleteProject(id);
-    fetchProjects();
+    try {
+      await deleteProject(id);
+      alert("Proyecto eliminado");
+      fetchProjects();
+    } catch (error: any) {
+      console.error(error);
+
+      if (error.response?.status === 403) {
+        alert("Solo los administradores pueden eliminar proyectos");
+      } else {
+        alert("Error eliminando proyecto");
+      }
+    }
   };
 
   const handleSave = async (data: any) => {

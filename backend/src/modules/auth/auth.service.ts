@@ -30,10 +30,15 @@ export class AuthService {
       throw new Error("El usuario ya existe");
     }
 
+    const finalRole =
+    process.env.ENABLE_ADMIN_CREATION === "true" && role === "admin"
+      ? "admin"
+      : "user";
+      
     const hashed = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
-      data: { name, email, password: hashed, role: "user" },
+      data: { name, email, password: hashed, role: finalRole },
       select: {
         id: true,
         name: true,
