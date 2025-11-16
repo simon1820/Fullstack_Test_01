@@ -1,31 +1,12 @@
-# ============================
-# 1) Etapa de construcción
-# ============================
-FROM node:20 AS builder
+FROM node:20
 
 WORKDIR /app
 
 COPY package*.json ./
-
 RUN npm install
 
 COPY . .
 
-RUN npm run build
-
-# ============================
-# 2) Etapa de ejecución (servidor estático)
-# ============================
-FROM node:20-alpine AS runner
-
-WORKDIR /app
-
-# Instalar servidor estático
-RUN npm install -g serve
-
-# Copiar build
-COPY --from=builder /app/dist ./dist
-
 EXPOSE 5173
 
-CMD ["serve", "-s", "dist", "-l", "5173"]
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

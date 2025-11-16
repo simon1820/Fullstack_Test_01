@@ -1,5 +1,3 @@
-
-```markdown
 # Fullstack Project — Gestión de Proyectos y Tareas
 
 Breve: aplicación fullstack (API + SPA) para gestionar proyectos, tareas y colaboradores. Desarrollada como prueba técnica usando buenas prácticas, tipado fuerte y pruebas de integración.
@@ -37,10 +35,21 @@ Raíz del repo:
 
 ```
 /
-├── backend/           # API (Express + TypeScript)
-├── frontend/          # SPA (React + Vite)
-├── TECHNICAL_DECISIONS.md
-├── docker-compose.yml # Opcional
+├── backend/
+│ ├── src/
+│ ├── prisma/
+│ ├── Dockerfile.dev
+│ ├── Dockerfile.production
+│ └── package.json
+│
+├── frontend/
+│ ├── src/
+│ ├── public/
+│ ├── Dockerfile.dev
+│ └── package.json
+│
+├── docker-compose.yml
+├── .github/workflows/deploy.yml
 └── README.md
 ```
 
@@ -76,82 +85,6 @@ El servidor por defecto corre en `http://localhost:4000` y la documentación Swa
 ```powershell
 cd ..\frontend
 npm install
-# Fullstack Project — Gestión de Proyectos y Tareas
-
-Aplicación fullstack (API + SPA) para gestionar proyectos, tareas y colaboradores. Desarrollada como prueba técnica usando buenas prácticas, tipado fuerte y pruebas de integración.
-
-## Contenido
-- Descripción
-- Tecnologías
-- Estructura del repo
-- Decisiones técnicas (ver `TECHNICAL_DECISIONS.md`)
-- Instalación y ejecución (desarrollo)
-- Variables de entorno
-- Migraciones y base de datos
-- Tests
-- Docker (opcional)
-- Contribuir y contacto
-
----
-
-## Tecnologías principales
-
-- Backend: Node.js, Express, TypeScript
-- ORM: Prisma (MySQL)
-- Auth: JWT
-- Tests: Jest + Supertest
-- Frontend: React, Vite, TypeScript
-- Estado: Zustand
-- Estilos: Tailwind CSS
-- HTTP client: Axios
-
----
-
-## Estructura del proyecto
-
-```
-/
-├── backend/           # API (Express + TypeScript)
-├── frontend/          # SPA (React + Vite)
-├── TECHNICAL_DECISIONS.template.md
-├── docker-compose.yml # Opcional
-└── README.md
-```
-
-Cada carpeta contiene su propio `package.json` y scripts.
-
----
-
-## Instalación y ejecución (desarrollo)
-
-Las instrucciones siguientes están pensadas para PowerShell en Windows. Ejecuta cada bloque por separado.
-
-1) Clonar el repositorio
-
-```powershell
-git clone <REPO_URL>
-cd "Fullstack_Test_01"
-```
-
-2) Backend (API)
-
-```powershell
-cd .\backend
-npm install
-# Copia .env desde el ejemplo y edítalo: see "Variables de entorno"
-npx prisma migrate dev
-npm run dev
-```
-
-El servidor por defecto corre en `http://localhost:4000` y la documentación Swagger suele estar en `http://localhost:4000/api/docs` (la URL exacta puede cambiar si defines `API_URL` en `.env`).
-
-3) Frontend (SPA)
-
-```powershell
-cd ..\frontend
-npm install
-# Copia .env desde el ejemplo y edítalo: see "Variables de entorno"
-npm run dev
 ```
 
 El frontend por defecto corre en `http://localhost:5173`.
@@ -332,8 +265,6 @@ npx prisma generate
 npx prisma migrate dev
 ```
 
-Nota: el contenedor `backend` está configurado para ejecutar automáticamente `npx prisma migrate deploy` al arrancar (ver `backend/docker-entrypoint.sh`). Si usas Docker Compose no es estrictamente necesario ejecutar las migraciones manualmente, pero puedes hacerlo para mayor control.
-
 5) Endpoints y comprobaciones
 
 - Frontend usualmente en `http://localhost` (si usaste Docker con nginx) o `http://localhost:5173` (dev).
@@ -398,18 +329,6 @@ El sistema implementa autenticación basada en JWT con control de acceso por rol
 - **Usuario (user)**: rol por defecto. Puede crear y gestionar sus propios proyectos y tareas.
 - **Administrador (admin)**: puede eliminar cualquier proyecto. Acceso completo a estadísticas.
 
-### Credenciales de prueba
-
-```
-Usuario regular:
-Email: alex@test.com
-Contraseña: 123456
-
-Administrador:
-Email: admin@dev.com
-Contraseña: 123456
-```
-
 ### Flujo de autenticación
 
 1. Registro o login en `/auth/register` o `/auth/login`.
@@ -440,6 +359,72 @@ Contraseña: 123456
 
 ---
 
+## Aplicación en Producción
+
+La aplicación está desplegada en **Railway** mediante un contenedor monolítico que incluye:
+
+✔ **Backend (Express + TypeScript)**  
+✔ **Frontend (React + Vite) servido por el backend**  
+✔ **Prisma ORM + MySQL**  
+✔ **Build multi-stage optimizado**  
+✔ **CI/CD automático con GitHub Actions + Railway CLI**
+
+### URL de Producción  
+**https://fullstacktest01-production.up.railway.app/**
+
+### Arquitectura del despliegue
+
+El contenedor final contiene:
+
+- Compilación del frontend (`npm run build`)
+- Compilación del backend (`npm run build`)
+- Copia del frontend al directorio `/public` del servidor Express
+- Cliente Prisma generado
+- Migraciones ejecutadas automáticamente vía:
+
+
+### Dockerfile de Producción (multi-stage)
+
+Este Dockerfile construye ambas partes y entrega un solo contenedor:
+
+1. **Frontend builder** (Vite)
+2. **Backend builder** (TS → JS)
+3. **Contenedor final** (solo ejecuta Node)
+
+Railway toma este Dockerfile directamente para construir la imagen final.
+
+### CI/CD (GitHub Actions → Railway)
+
+Cada push a la rama configurada ejecuta:
+
+1. Verificación del proyecto Railway  
+2. Construcción  
+3. Deploy usando:
+
+### 📦 Resultado
+
+- Una sola imagen Docker optimizada  
+- Migraciones Prisma aplicadas automáticamente  
+- Frontend servido por Express en `/`  
+- API accesible desde `/api`  
+- Entorno de producción estable y reproducible  
+- Deploy confiable con un solo push
+
+---
+
+> **Nota importante sobre el entorno de producción**
+>
+> La aplicación está actualmente desplegada en Railway bajo un **entorno gratuito**, lo cual implica que:
+> - El servicio puede entrar en modo “sleep” si no recibe tráfico por un periodo prolongado.
+> - El arranque inicial después de dormir puede tardar algunos segundos.
+> - Los recursos asignados (CPU, RAM y tiempo de ejecución) son limitados.
+>
+> A pesar de estas restricciones, **el proyecto funciona correctamente** y cumple su propósito de demostración para la prueba técnica.  
+>
+> En entorno **local**, utilizando Docker Compose o ejecución directa del backend/frontend, el sistema corre sin limitaciones, con mejor rendimiento y sin tiempos de espera.
+
 ## Contacto
 
-Autor: Simon Guijarro
+Autor: **Simon Guijarro**
+Correo: **simon132000@hotmail.com**
+Linkedin: **linkedin.com/in/saguijarro/es/**

@@ -116,10 +116,72 @@ Justificación: el dominio requiere integridad referencial y joins frecuentes.
 
 ---
 
+## Entorno Produccion
+
+Se optó por dos configuraciones Docker diferentes:
+
+- Desarrollo (local) → backend y frontend con sus propios Dockerfiles individuales, montando código local (volumes) y recargando con HMR.
+
+- Producción (Railway) → un Dockerfile monolítico que construye backend y frontend dentro de una sola imagen optimizada, sin hot reload, sin volúmenes, usando npm run build en ambos.
+
+Justificación:
+
+- Railway procesa solo una imagen por servicio → monolítico obligatorio.
+
+- Para desarrollo se necesita hot reload → dos servicios con Docker independientes.
+
+Evita inconsistencias entre entornos → ambos comparten base Node 20 y Prisma.
+
+Trade-off:
+El Docker de producción no sirve para desarrollo directo por ausencia de node_modules y volumen local.
+Mitigado manteniendo ambos setups en paralelo.
+
+## No permitir crear administradores desde el frontend ni API pública
+
+Por seguridad, el endpoint /auth/register siempre genera usuarios user siempre y cuando la variable de entorno **ENABLE_ADMIN_CREATION** tenga un valor user, en caso este habilitada se podran crear usuarios admin para las pruebas correspondientes.
+
+Los administradores deben crearse mediante:
+
+- consulta SQL directa
+
+- script Node interno
+
+- futura ruta protegida para admins
+
+Justificación:
+Evita escalamiento de privilegios mediante manipulación del body o ataques directos usando herramientas externas (Postman, ThunderClient).
+
+Trade-off:
+Se requiere intervención manual para crear el primer admin.
+
+## Producción en Railway (plan gratuito)
+
+El proyecto se desplegó en Railway usando:
+
+- Dockerfile monolítico
+
+- GitHub Actions (deploy.yml)
+
+- Autodeploy por push a rama específica
+
+Justificación:
+
+- Railway simplifica CI/CD y hosting.
+
+- No requiere configuración de NGINX, PM2 ni servidores físicos.
+
+- Minimiza fricción para el evaluador: solo revisa la URL pública.
+
+Limitación conocida (plan gratuito):
+
+- El servicio puede dormir.
+
+- El cold start puede tardar 20–40 segundos.
+
+Base de datos limitada en capacidad.
+
 ## Conclusión
 
 Las decisiones priorizan claridad, mantenibilidad y rapidez de entrega para la prueba técnica. Se recomiendan mejoras (validaciones declarativas, observabilidad y gestión de tokens) si se adapta a producción.
 
 ---
-
-<!-- Instrucciones: copiar este archivo a `TECHNICAL_DECISIONS.md` y completar los apartados con detalles específicos del proyecto si se desea. -->

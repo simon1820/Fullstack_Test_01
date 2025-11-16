@@ -23,7 +23,9 @@ import { getProjects } from "../../api/projects.api";
 
 export default function DashboardHome() {
   const [stats, setStats] = useState<any>(null);
-  const [projects, setProjects] = useState([]);
+
+  // projects siempre será array
+  const [projects, setProjects] = useState<any[]>([]);
 
   const [filter, setFilter] = useState<any>({
     projectId: "",
@@ -39,9 +41,13 @@ export default function DashboardHome() {
     (async () => {
       try {
         const proj = await getProjects();
-        setProjects(proj.data);
+
+        // Asegurar que projects siempre sea un array válido
+        setProjects(Array.isArray(proj.data) ? proj.data : []);
+
       } catch {
         toast.error("Error cargando proyectos");
+        setProjects([]); // fallback seguro
       }
     })();
   }, []);
@@ -54,6 +60,7 @@ export default function DashboardHome() {
       try {
         const res = await getStats(filter);
         setStats(res.data);
+
       } catch {
         toast.error("Error cargando estadísticas");
       }
@@ -67,9 +74,9 @@ export default function DashboardHome() {
   // ==========================
   // DATA PARA GRÁFICOS
   // ==========================
-  const estados = stats.estados;
-  const prioridades = stats.prioridades;
-  const historial = stats.historial;
+  const estados = Array.isArray(stats.estados) ? stats.estados : [];
+  const prioridades = Array.isArray(stats.prioridades) ? stats.prioridades : [];
+  const historial = Array.isArray(stats.historial) ? stats.historial : [];
 
   const COLORS = ["#fbbf24", "#3b82f6", "#10b981"];
 
@@ -83,14 +90,13 @@ export default function DashboardHome() {
 
       {/* FILTROS */}
       <DashboardFilters
-        projects={projects}
+        projects={projects}   // ya va un array seguro
         filter={filter}
         setFilter={setFilter}
       />
 
       {/* CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-
         <StatCard
           title="Proyectos"
           value={stats.totalProjects}

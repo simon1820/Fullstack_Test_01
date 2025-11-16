@@ -1,4 +1,6 @@
 export default function DashboardFilters({ projects, filter, setFilter }: any) {
+  const safeProjects = Array.isArray(projects) ? projects : [];
+
   return (
     <div className="flex flex-wrap gap-4 bg-white shadow-md p-4 rounded-xl mb-6">
 
@@ -11,7 +13,8 @@ export default function DashboardFilters({ projects, filter, setFilter }: any) {
         }
       >
         <option value="">Todos los proyectos</option>
-        {projects.map((p: any) => (
+
+        {safeProjects.map((p: any) => (
           <option key={p.id} value={p.id}>
             {p.name}
           </option>
